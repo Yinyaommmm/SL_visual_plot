@@ -1,3 +1,9 @@
+import sys
+import os
+# 获取当前脚本所在目录的上一级目录（SL_visual_plot）,并添加为系统路径，方便引入util工具包
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(BASE_DIR)
+
 import matplotlib.pyplot as plt
 import numpy as np
 from itertools import cycle
@@ -6,7 +12,7 @@ from util.formatter import format2KorM, format2KorM_no100K,export_result
 from util.reader import read_excel
 
 from matplotlib.colors import ListedColormap, BoundaryNorm
-df = read_excel()  # 读取数据，df.columns = ['up_D', 'up_M', 'down_D', 'loss']
+df = read_excel(type="error")  # 读取数据，df.columns = ['up_D', 'up_M', 'down_D', 'error']
 # 按 'up_D' 进行分组
 grouped = df.groupby('up_D')
 
@@ -23,7 +29,7 @@ custom_colors = [
 
 num_groups = len(grouped)  # 计算 'up_D' 组的数量
 
-fig, axes = plt.subplots(1, num_groups, figsize=(5 * num_groups, 5), sharey=True)
+fig, axes = plt.subplots(1, num_groups, figsize=(5 * num_groups, 6), sharey=True)
 fig.subplots_adjust(wspace=0.05)  # 调整子图间距
 
 if num_groups == 1:
@@ -33,7 +39,7 @@ for i, (ax, (up_D, group)) in enumerate(zip(axes, grouped)):
     color_cycle = cycle(custom_colors)
     for up_M, sub_group in group.groupby('up_M'):
         color = next(color_cycle)
-        ax.plot(sub_group['down_D'], sub_group['loss'], label=f'up_M={format2KorM(up_M)}', linestyle='--', marker='o', color=color)
+        ax.plot(sub_group['down_D'], sub_group['error'], label=f'up_M={format2KorM(up_M)}', linestyle='--', marker='o', color=color)
     
     ax.set_title(f'$D_p = ${format2KorM(up_D)}', fontsize=18)
     
@@ -51,7 +57,7 @@ for i, (ax, (up_D, group)) in enumerate(zip(axes, grouped)):
     ax.set_xticklabels([f'{tick // 1000}' for tick in xticks])
 
 fig.text(0.5, 0.03, '$D_f$ (K)', ha='center', fontsize=18)
-axes[0].set_ylabel('$Cross\ Entropy\ Loss$', fontsize=18)
+axes[0].set_ylabel('$Error$', fontsize=18)
 
 # 创建colorbar
 unique_up_M = np.sort(df['up_M'].unique())
@@ -73,4 +79,4 @@ cbar.set_ticklabels([format2KorM_no100K(val) for val in unique_up_M])
 
 cbar.set_label('$M$', rotation=90, labelpad=10, fontsize=18)
 
-export_result(plt,'./image/single_colorbar_rDp_xDf',"pdf")
+export_result(plt,'./image/err_single_colorbar_rDp_xDf',"pdf")

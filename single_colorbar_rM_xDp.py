@@ -4,10 +4,10 @@ from itertools import cycle
 from matplotlib import colormaps
 from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize
-from reader import read_excel
-from formatter import format2KorM, format2KorM_no100K,export_result
+from util.formatter import format2KorM, format2KorM_no100K,export_result
+from util.reader import read_excel
 
-df = read_excel(type="err")  # df.columns is ['up_D', 'up_M', 'down_D', 'loss']
+df = read_excel()  # df.columns is ['up_D', 'up_M', 'down_D', 'loss']
 # Group by 'up_M'
 grouped = df.groupby('up_M')
 

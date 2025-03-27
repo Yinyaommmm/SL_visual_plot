@@ -1,3 +1,9 @@
+import sys
+import os
+# 获取当前脚本所在目录的上一级目录（SL_visual_plot）,并添加为系统路径，方便引入util工具包
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(BASE_DIR)
+
 import matplotlib.pyplot as plt
 import numpy as np
 from itertools import cycle
@@ -7,7 +13,7 @@ from matplotlib.colors import Normalize
 from util.formatter import format2KorM, format2KorM_no100K,export_result
 from util.reader import read_excel
 
-df = read_excel() # df.columns is ['up_D', 'up_M', 'down_D', 'loss']
+df = read_excel(type="error") # df.columns is ['up_D', 'up_M', 'down_D', 'error']
 # Group by 'up_M'
 grouped = df.groupby('up_M')
 
@@ -36,7 +42,7 @@ for i, (ax, (up_M, group)) in enumerate(zip(axes, grouped)):
     color_cycle = cycle(custom_colors)
     for up_D, sub_group in group.groupby('up_D'):
         color = next(color_cycle)
-        ax.plot(sub_group['down_D'], sub_group['loss'], label=f'up_D={up_D}', linestyle='--', marker='o', color=color)
+        ax.plot(sub_group['down_D'], sub_group['error'], label=f'up_D={up_D}', linestyle='--', marker='o', color=color)
     
     ax.set_title(f'$M = ${format2KorM(up_M)}', fontsize=18)
     # ax.grid(True) 开启网格
@@ -64,7 +70,7 @@ for i, (ax, (up_M, group)) in enumerate(zip(axes, grouped)):
 fig.text(0.5, 0.03, '$D_f$ (K)', ha='center', fontsize=18)
 
 # Set y-axis label for the first subplot only
-axes[0].set_ylabel('$Cross\ Entropy\ Loss$', fontsize=18)
+axes[0].set_ylabel('$Error$', fontsize=18)
 
 # Determine the minimum and maximum values of 'up_D' across all groups
 min_up_D = df['up_D'].min()
@@ -86,4 +92,4 @@ cbar.set_label('$D_p$', rotation=90, labelpad=10, fontsize=18)  # Set the label 
 cbar.ax.set_yticklabels([format2KorM_no100K(val) for val in unique_up_D])  # Format the labels to two decimal places
 
 # Save the figure to a file
-export_result(plt,'./image/single_colorbar_rM_xDf',"pdf")
+export_result(plt,'./image/err_single_colorbar_rM_xDf',"pdf")
