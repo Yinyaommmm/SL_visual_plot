@@ -13,7 +13,7 @@ from util.export import export_result
 from config import FIG_HEIGHT,FIG_GAP,DATASET
 
 
-df = read_excel()  # df.columns is ['up_D', 'up_M', 'down_D', 'loss']
+df = read_excel(type="error")  # 读取数据，df.columns = ['up_D', 'up_M', 'down_D', 'error']
 # Group by 'up_M'
 grouped = df.groupby('up_M')
 
@@ -39,7 +39,7 @@ for i, (ax, (up_M, group)) in enumerate(zip(axes, grouped)):
     color_cycle = cycle(custom_colors)
     for down_D, sub_group in group.groupby('down_D'):
         color = next(color_cycle)
-        ax.plot(sub_group['up_D'], sub_group['loss'], label=f'Finetuning Data Size={format2KorM( down_D)}', linestyle='--', marker='o', color=color)
+        ax.plot(sub_group['up_D'], sub_group['error'], label=f'Finetuning Data Size={format2KorM( down_D)}', linestyle='--', marker='o', color=color)
     
     ax.set_title(f'Model Params = {format2KorM(up_M)}', fontsize=18)
     
@@ -61,7 +61,7 @@ for i, (ax, (up_M, group)) in enumerate(zip(axes, grouped)):
 
 
 fig.text(0.5, 0.03, 'Pretraining Data Size (M)', ha='center', fontsize=18)
-axes[0].set_ylabel('$Cross\ Entropy\ Loss$', fontsize=18)
+axes[0].set_ylabel('$Error$', fontsize=18)
 
 filename = os.path.splitext(os.path.basename(__file__))[0]
 export_result(plt,f"{DATASET}_{filename}",'pdf')

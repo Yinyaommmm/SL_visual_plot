@@ -1,10 +1,10 @@
 from typing import Literal
 import pandas as pd
 import os 
-def read_excel(type:Literal["loss", "error"] ="loss"):
+def read_excel(type:Literal["loss", "error"] ="loss",dataset:Literal["CIFAR10","CIFAR100","TinyImageNet","ImageNet100"] = "ImageNet100"):
     # Read the data from Excel
     Base_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    df = pd.read_excel(os.path.join(Base_DIR,'data.xlsx'))
+    df = pd.read_excel(os.path.join(Base_DIR,'data.xlsx'),sheet_name=dataset)
 
     # Drop the useless column and adjust columns
     df = df.drop(df.columns[0], axis=1)

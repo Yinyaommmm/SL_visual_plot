@@ -8,13 +8,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from itertools import cycle
 
-from util.formatter import format2KorM, format2KorM_no100K
+from util.formatter import format2KorM, format2KorM_no100K,export_result
 from util.reader import read_excel
-from util.export import export_result
-from config import FIG_HEIGHT,FIG_GAP,DATASET
+from config import FIG_HEIGHT,FIG_GAP
 
 
-df = read_excel() # df.columns is ['up_D', 'up_M', 'down_D', 'loss']
+df = read_excel(type="error")  # 读取数据，df.columns = ['up_D', 'up_M', 'down_D', 'error']
 # Group by 'up_D'
 grouped = df.groupby('up_D')
 
@@ -34,7 +33,7 @@ num_groups = len(grouped)
 
 # Create subplots: one row, `num_groups` columns, sharing the y-axis
 fig, axes = plt.subplots(1, num_groups, figsize=(5 * num_groups, FIG_HEIGHT), sharey=True)  # sharey=True ensures they share the same y-axis
-fig.subplots_adjust(wspace=FIG_GAP)  
+fig.subplots_adjust(wspace=FIG_GAP)
 # If there's only one group, axes will be a single object, not an array
 if num_groups == 1:
     axes = [axes]
@@ -43,7 +42,7 @@ for i, (ax, (up_D, group)) in enumerate(zip(axes, grouped)):
     color_cycle = cycle(custom_colors)
     for down_D, sub_group in group.groupby('down_D'):
         color = next(color_cycle)
-        ax.plot(sub_group['up_M'], sub_group['loss'], label=f'Finetuning Data Size={format2KorM(down_D)}', linestyle='--', marker='o', color=color)
+        ax.plot(sub_group['up_M'], sub_group['error'], label=f'Finetuning Data Size={format2KorM(down_D)}', linestyle='--', marker='o', color=color)
     ax.set_title(f'Pretraining Data Size = {format2KorM(up_D)}', fontsize=18)
     
     # Compute x-axis range with 5% margin
@@ -72,8 +71,9 @@ for i, (ax, (up_D, group)) in enumerate(zip(axes, grouped)):
 fig.text(0.5, 0.03, 'Model Params (M)', ha='center', fontsize=18)
 
 # Set y-axis label for the first subplot only
-axes[0].set_ylabel('$Cross\ Entropy\ Loss$', fontsize=18)
+axes[0].set_ylabel('$Error$', fontsize=18)
 
 
 filename = os.path.splitext(os.path.basename(__file__))[0]
-export_result(plt,f"{DATASET}_{filename}",'pdf')
+extension = 'pdf'
+export_result(plt,f'./image/{filename}',extension)

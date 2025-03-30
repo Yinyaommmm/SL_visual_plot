@@ -7,16 +7,15 @@ sys.path.append(BASE_DIR)
 import matplotlib.pyplot as plt
 import numpy as np
 from itertools import cycle
-
 from util.formatter import format2KorM, format2KorM_no100K
 from util.reader import read_excel
 from util.export import export_result
 from config import FIG_HEIGHT,FIG_GAP,DATASET
 
 
-df = read_excel() # df.columns is ['up_D', 'up_M', 'down_D', 'loss']
-# Group by 'up_D'
-grouped = df.groupby('up_D')
+df = read_excel(type="error")  # 读取数据，df.columns = ['up_D', 'up_M', 'down_D', 'error']
+# Group by 'up_M'
+grouped = df.groupby('up_M')
 
 custom_colors = [
     (0/255, 255/255, 255/255),    # rgb(0,255,255) - light cyan
@@ -29,7 +28,7 @@ custom_colors = [
     (255/255, 0/255, 128/255),    # rgb(255,0,128) - deep pink
 ]
 
-# Number of unique up_D groups
+# Number of unique up_M groups
 num_groups = len(grouped)
 
 # Create subplots: one row, `num_groups` columns, sharing the y-axis
@@ -39,41 +38,42 @@ fig.subplots_adjust(wspace=FIG_GAP)
 if num_groups == 1:
     axes = [axes]
 
-for i, (ax, (up_D, group)) in enumerate(zip(axes, grouped)):
+for i, (ax, (up_M, group)) in enumerate(zip(axes, grouped)):
     color_cycle = cycle(custom_colors)
-    for down_D, sub_group in group.groupby('down_D'):
+    for up_D, sub_group in group.groupby('up_D'):
         color = next(color_cycle)
-        ax.plot(sub_group['up_M'], sub_group['loss'], label=f'Finetuning Data Size={format2KorM(down_D)}', linestyle='--', marker='o', color=color)
-    ax.set_title(f'Pretraining Data Size = {format2KorM(up_D)}', fontsize=18)
+        ax.plot(sub_group['down_D'], sub_group['error'], label=f'Pretraining Data Size={format2KorM_no100K(up_D)}', linestyle='--', marker='o', color=color)
     
-    # Compute x-axis range with 5% margin
-    min_x = group['up_M'].min()
-    max_x = group['up_M'].max()
+    ax.set_title(f'Model Params = {format2KorM(up_M)}', fontsize=18)
+    # ax.grid(True) 开启网格
+    # 计算 x 轴范围并添加 5% 边距
+    min_x = group['down_D'].min()
+    max_x = group['down_D'].max()
     margin = (max_x - min_x) * 0.05
-    scale = 100000
-    x_min = (min_x - margin) // scale
-    x_max = (max_x + margin) // scale
-    
-    # Round to multiples of 5
-    x_min, x_max = int(np.floor(x_min / 5) * 5), int(np.ceil(x_max / 5) * 5)
-    x_min, x_max = x_min * scale, x_max * scale
-    
-    # Generate 5 evenly spaced tick marks
-    xticks = np.arange(x_min, x_max + 1, step=10000000)
-    print(xticks)
-    # Set x-axis range
+    x_min = (min_x - margin) //1000
+    x_max = (max_x + margin)//1000
+    # 取整到 5 的倍数
+    x_min,x_max = int(np.floor(x_min / 5) * 5), int(np.ceil(x_max / 5) * 5)
+    print(x_min,x_max),
+    x_min,x_max = x_min * 1000, x_max*1000
+    # 生成 5 个等间距的整数刻度
+    xticks = np.arange(x_min, x_max + 1, step=20000) 
+    # 设置 x 轴范围
     ax.set_xlim(x_min, x_max)
-    ax.set_xticks(xticks)
-    ax.set_xticklabels([f'{tick // 1000000}' for tick in xticks])
 
-    ax.legend(loc='upper right', fontsize=12)
+    # 应用新的 x 轴刻度
+    ax.set_xticks(xticks)
+    ax.set_xticklabels([f'{tick // 1000}' for tick in xticks])
+
+    ax.legend(loc="upper right",fontsize = 11)
+
 
 # Set the x-axis label for the entire figure
-fig.text(0.5, 0.03, 'Model Params (M)', ha='center', fontsize=18)
+fig.text(0.5, 0.03, 'Finetuning Data (K)', ha='center', fontsize=18)
 
 # Set y-axis label for the first subplot only
-axes[0].set_ylabel('$Cross\ Entropy\ Loss$', fontsize=18)
+axes[0].set_ylabel('$Error$', fontsize=18)
 
-
+# Save the figure to a file
 filename = os.path.splitext(os.path.basename(__file__))[0]
 export_result(plt,f"{DATASET}_{filename}",'pdf')

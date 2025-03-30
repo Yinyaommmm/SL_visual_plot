@@ -1,3 +1,5 @@
 ./image/*.png
 ./image/*.pdf
-./*/image
+
+./*/image/*.pdf
+./loss_h6

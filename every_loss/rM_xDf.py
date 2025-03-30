@@ -7,9 +7,10 @@ sys.path.append(BASE_DIR)
 import matplotlib.pyplot as plt
 import numpy as np
 from itertools import cycle
-from util.formatter import format2KorM, format2KorM_no100K,export_result
+from util.formatter import format2KorM, format2KorM_no100K
 from util.reader import read_excel
-from config import FIG_HEIGHT
+from util.export import export_result
+from config import FIG_HEIGHT,FIG_GAP,DATASET
 
 
 df = read_excel() # df.columns is ['up_D', 'up_M', 'down_D', 'loss']
@@ -32,7 +33,7 @@ num_groups = len(grouped)
 
 # Create subplots: one row, `num_groups` columns, sharing the y-axis
 fig, axes = plt.subplots(1, num_groups, figsize=(5 * num_groups, FIG_HEIGHT), sharey=True)  # sharey=True ensures they share the same y-axis
-fig.subplots_adjust(wspace=0.05)  
+fig.subplots_adjust(wspace=FIG_GAP)  
 # If there's only one group, axes will be a single object, not an array
 if num_groups == 1:
     axes = [axes]
@@ -56,7 +57,7 @@ for i, (ax, (up_M, group)) in enumerate(zip(axes, grouped)):
     print(x_min,x_max),
     x_min,x_max = x_min * 1000, x_max*1000
     # 生成 5 个等间距的整数刻度
-    xticks = np.arange(x_min, x_max + 1, step=10000) 
+    xticks = np.arange(x_min, x_max + 1, step=20000) 
     # 设置 x 轴范围
     ax.set_xlim(x_min, x_max)
 
@@ -75,5 +76,4 @@ axes[0].set_ylabel('$Cross\ Entropy\ Loss$', fontsize=18)
 
 # Save the figure to a file
 filename = os.path.splitext(os.path.basename(__file__))[0]
-extension = 'pdf'
-export_result(plt,f'./image/{filename}',extension)
+export_result(plt,f"{DATASET}_{filename}",'pdf')

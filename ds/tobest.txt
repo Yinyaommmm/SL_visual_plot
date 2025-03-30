@@ -1,0 +1,2 @@
+iN: downD = 130000
+tN:downD = 100200

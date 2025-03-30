@@ -24,7 +24,7 @@ custom_colors = [
 num_groups = len(grouped)  # 计算 'up_D' 组的数量
 
 fig, axes = plt.subplots(1, num_groups, figsize=(5 * num_groups, 5), sharey=True)
-fig.subplots_adjust(wspace=0.05)  # 调整子图间距
+fig.subplots_adjust(wspace=0.1)  # 调整子图间距
 
 if num_groups == 1:
     axes = [axes]

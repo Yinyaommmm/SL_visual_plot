@@ -17,6 +17,4 @@ def format2KorM_no100K(value):
     else:
         return str(value)
     
-def export_result(plt,purename,format):
-    plt.savefig(f'{purename}.{format}',format=format)
 
